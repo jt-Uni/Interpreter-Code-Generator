@@ -1,4 +1,4 @@
-// Generated from C:/Users/owenj/Desktop/123456 (1)/123456/task1/src/SimpleLang.g4 by ANTLR 4.13.1
+// Generated from C:/Users/James/projects/Interpreter-Code-Generator/task1/src/SimpleLang.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;

@@ -332,7 +332,6 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
     }
 
 
-
     @Override
     public Integer visitEqBinop(SimpleLangParser.EqBinopContext ctx) {
         return null;
