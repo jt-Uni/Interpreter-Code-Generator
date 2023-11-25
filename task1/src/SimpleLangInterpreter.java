@@ -301,7 +301,79 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
 
     @Override
     public Integer visitExprBinOpExpr(SimpleLangParser.ExprBinOpExprContext ctx) {
-        return null;
+
+        SimpleLangParser.ExpContext operand1 = ctx.exp(0);
+        Integer oprnd1 = visit(operand1);
+        SimpleLangParser.ExpContext operand2 = ctx.exp(1);
+        Integer oprnd2 = visit(operand2);
+
+        frames.peek();
+
+        switch (((TerminalNode) (ctx.binop().getChild(0))).getSymbol().getType()) {
+
+            case SimpleLangParser.Eq ->  {
+
+                return ((oprnd1 != null && oprnd1.equals(oprnd2)) ? 1 : 0);
+
+            }
+            case SimpleLangParser.Less -> {
+
+                return ((oprnd1 < oprnd2) ? 1 : 0);
+
+            }
+            case SimpleLangParser.LessEq -> {
+
+                return ((oprnd1 <= oprnd2) ? 1 : 0);
+
+            }
+            case SimpleLangParser.Greater -> {
+
+                return ((oprnd1 > oprnd2) ? 1 : 0);
+
+            }
+            case SimpleLangParser.GreaterEq -> {
+
+                return ((oprnd1 >= oprnd2) ? 1 : 0);
+
+            }
+            case SimpleLangParser.Plus -> {
+
+                return oprnd1 + oprnd2;
+
+            }
+            case SimpleLangParser.Times -> {
+
+                return oprnd1 * oprnd2;
+
+            }
+            case SimpleLangParser.Minus -> {
+
+                return oprnd1 - oprnd2;
+
+            }
+            case SimpleLangParser.Divide -> {
+
+                return oprnd1 / oprnd2;
+
+            }
+            case SimpleLangParser.And -> {
+
+                return (oprnd1 & oprnd2);
+
+            }
+            case SimpleLangParser.Or -> {
+
+                return (oprnd1 | oprnd2);
+
+            }
+            case SimpleLangParser.Xor -> {
+
+                return ((oprnd1 != 0) ^ (oprnd2 != 0)) ? 1 : 0;
+
+            }
+            default -> throw new RuntimeException("Unsupported binary operator: " + ctx.binop().getText());
+        }
+
     }
 
     @Override public Integer visitIntExpr(SimpleLangParser.IntExprContext ctx)
@@ -311,26 +383,16 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
 
     @Override
     public Integer visitForExpr(SimpleLangParser.ForExprContext ctx) {
-        // Extract for loop components
-        SimpleLangParser.ExpContext initExpr = ctx.exp();
-        SimpleLangParser.ExpContext condition = ctx.exp();
-        SimpleLangParser.ExpContext iterationExpr = ctx.exp();
-        SimpleLangParser.BlockContext block = ctx.block();
 
-        // Execute initialization
-        visit(initExpr);
+        Integer returnValue = null;
 
-        while (visit(condition) > 0) {
-            // Execute loop body
-            visit(block);
+        do {
+            returnValue = visit(ctx.block());
+        } while (visit(ctx.exp()) <= 0);
 
-            // Execute iteration expression
-            visit(iterationExpr);
-        }
+        return returnValue;
 
-        return null;
     }
-
 
     @Override
     public Integer visitEqBinop(SimpleLangParser.EqBinopContext ctx) {
