@@ -1,7 +1,9 @@
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> implements SimpleLangVisitor<Integer> {
 
@@ -33,8 +35,8 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
         return visit(main);
     }
 
-    @Override public Integer visitProg(SimpleLangParser.ProgContext ctx)
-    {
+    @Override
+    public Integer visitProg(SimpleLangParser.ProgContext ctx) {
         throw new RuntimeException("Should not be here!");
     }
 
@@ -97,8 +99,8 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
         return returnValue;
     }
 
-    @Override public Integer visitBlock(SimpleLangParser.BlockContext ctx)
-    {
+    @Override
+    public Integer visitBlock(SimpleLangParser.BlockContext ctx) {
         Integer returnValue = null;
         for (int i = 0; i < ctx.ene.size(); ++i) {
             SimpleLangParser.ExpContext exp = ctx.ene.get(i);
@@ -139,7 +141,8 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
         return null;
     }
 
-    @Override public Integer visitBinOpExpr(SimpleLangParser.BinOpExprContext ctx) {
+    @Override
+    public Integer visitBinOpExpr(SimpleLangParser.BinOpExprContext ctx) {
 
         SimpleLangParser.ExpContext operand1 = ctx.exp(0);
         Integer oprnd1 = visit(operand1);
@@ -150,7 +153,7 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
 
         switch (((TerminalNode) (ctx.binop().getChild(0))).getSymbol().getType()) {
 
-            case SimpleLangParser.Eq ->  {
+            case SimpleLangParser.Eq -> {
 
                 return ((oprnd1 != null && oprnd1.equals(oprnd2)) ? 1 : 0);
 
@@ -230,7 +233,7 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
             throw new RuntimeException("Function '" + functionName + "' is not defined.");
         }
 
-        for (int i=0; i < ctx.args.size();i++) {
+        for (int i = 0; i < ctx.args.size(); i++) {
             SimpleLangParser.Typed_idfrContext name = functionDeclaration.vardec().typed_idfr().get(i);
             SimpleLangParser.ExpContext exp = ctx.args.get(i);
             String par = name.Idfr().getText();
@@ -251,12 +254,13 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
         return null;
     }
 
-    @Override public Integer visitBlockExpr(SimpleLangParser.BlockExprContext ctx) {
+    @Override
+    public Integer visitBlockExpr(SimpleLangParser.BlockExprContext ctx) {
         return visit(ctx.block());
     }
 
-    @Override public Integer visitIfExpr(SimpleLangParser.IfExprContext ctx)
-    {
+    @Override
+    public Integer visitIfExpr(SimpleLangParser.IfExprContext ctx) {
 
         SimpleLangParser.ExpContext cond = ctx.exp();
         Integer condValue = visit(cond);
@@ -289,7 +293,8 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
         return null;
     }
 
-    @Override public Integer visitSpaceExpr(SimpleLangParser.SpaceExprContext ctx) {
+    @Override
+    public Integer visitSpaceExpr(SimpleLangParser.SpaceExprContext ctx) {
         return null;
     }
 
@@ -311,7 +316,7 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
 
         switch (((TerminalNode) (ctx.binop().getChild(0))).getSymbol().getType()) {
 
-            case SimpleLangParser.Eq ->  {
+            case SimpleLangParser.Eq -> {
 
                 return ((oprnd1 != null && oprnd1.equals(oprnd2)) ? 1 : 0);
 
@@ -376,8 +381,8 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
 
     }
 
-    @Override public Integer visitIntExpr(SimpleLangParser.IntExprContext ctx)
-    {
+    @Override
+    public Integer visitIntExpr(SimpleLangParser.IntExprContext ctx) {
         return Integer.parseInt(ctx.IntLit().getText());
     }
 

@@ -238,7 +238,7 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         sb.append(String.format("""
         %s:
-        """, ctx.typed_idfr(0).Idfr().getText())
+        """, ctx.typed_idfr().Idfr().getText())
         );
 
         sb.append("""
@@ -259,8 +259,8 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
         */
 
 
-        for (int i = 0; i < ctx.vardec.size(); ++i) {
-            SimpleLangParser.Typed_idfrContext typedIdfr = ctx.vardec.get(i);
+        for (int i = 0; i < ctx.vardec().typed_idfr().size(); ++i) {
+            SimpleLangParser.Typed_idfrContext typedIdfr = ctx.vardec().typed_idfr().get(i);
             localVars.put(typedIdfr.Idfr().getText(), 4 + 8 + i * 4);
         }
 
@@ -268,19 +268,25 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         sb.append(String.format("""
             PopRel      %d
-        """, 4 + 8 + ctx.vardec.size() * 4)
+        """, 4 + 8 + ctx.vardec().typed_idfr().size() * 4)
         );
 
         sb.append(String.format("""
             RestoreFP
             Return      %d
-        """, ctx.vardec.size() * 4)
+        """, ctx.vardec().typed_idfr().size() * 4)
         );
 
         localVars.clear();
 
         return sb.toString();
     }
+
+    @Override
+    public String visitVardec(SimpleLangParser.VardecContext ctx) {
+        return null;
+    }
+
     @Override public String visitTyped_idfr(SimpleLangParser.Typed_idfrContext ctx)
     {
         throw new RuntimeException("Should not be here!");
@@ -326,6 +332,31 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         return sb.toString();
 
+    }
+
+    @Override
+    public String visitWhileExpr(SimpleLangParser.WhileExprContext ctx) {
+
+        StringBuilder sb = new StringBuilder();
+
+        while (Integer.parseInt(visit(ctx.exp())) > 0) {
+            sb.append("""
+                Discard         4
+            """);
+        }
+
+        return sb.toString();
+
+    }
+
+    @Override
+    public String visitSkipExpr(SimpleLangParser.SkipExprContext ctx) {
+        return null;
+    }
+
+    @Override
+    public String visitBoolLitExpr(SimpleLangParser.BoolLitExprContext ctx) {
+        return null;
     }
 
     @Override public String visitAssignExpr(SimpleLangParser.AssignExprContext ctx)
@@ -395,6 +426,15 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
             }
 
+            case SimpleLangParser.Times -> {
+
+                sb.append("""
+                    Times
+                """
+                );
+
+            }
+
             case SimpleLangParser.Minus -> {
 
                 sb.append("""
@@ -404,10 +444,37 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
             }
 
-            case SimpleLangParser.Times -> {
+            case SimpleLangParser.Divide -> {
 
                 sb.append("""
-                    Times
+                    Divide
+                """
+                );
+
+            }
+
+            case SimpleLangParser.And -> {
+
+                sb.append("""
+                    And
+                """
+                );
+
+            }
+
+            case SimpleLangParser.Or -> {
+
+                sb.append("""
+                    Or
+                """
+                );
+
+            }
+
+            case SimpleLangParser.Xor -> {
+
+                sb.append("""
+                    Xor
                 """
                 );
 
@@ -488,6 +555,12 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         return sb.toString();
     }
+
+    @Override
+    public String visitNewlineExpr(SimpleLangParser.NewlineExprContext ctx) {
+        return null;
+    }
+
     @Override public String visitPrintExpr(SimpleLangParser.PrintExprContext ctx)
     {
 
@@ -535,6 +608,12 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         return sb.toString();
     }
+
+    @Override
+    public String visitExprBinOpExpr(SimpleLangParser.ExprBinOpExprContext ctx) {
+        return null;
+    }
+
     @Override public String visitIntExpr(SimpleLangParser.IntExprContext ctx)
     {
         StringBuilder sb = new StringBuilder();
@@ -546,6 +625,12 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         return sb.toString();
     }
+
+    @Override
+    public String visitForExpr(SimpleLangParser.ForExprContext ctx) {
+        return null;
+    }
+
     @Override public String visitEqBinop(SimpleLangParser.EqBinopContext ctx)
     {
         throw new RuntimeException("Should not be here!");
@@ -558,6 +643,22 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
     {
         throw new RuntimeException("Should not be here!");
     }
+
+    @Override
+    public String visitGreater(SimpleLangParser.GreaterContext ctx) {
+        return null;
+    }
+
+    @Override
+    public String visitGreaterEq(SimpleLangParser.GreaterEqContext ctx) {
+        return null;
+    }
+
+    @Override
+    public String visitDivideBinop(SimpleLangParser.DivideBinopContext ctx) {
+        return null;
+    }
+
     @Override public String visitPlusBinop(SimpleLangParser.PlusBinopContext ctx)
     {
         throw new RuntimeException("Should not be here!");
@@ -569,6 +670,11 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
     @Override public String visitTimesBinop(SimpleLangParser.TimesBinopContext ctx)
     {
         throw new RuntimeException("Should not be here!");
+    }
+
+    @Override
+    public String visitAndBinop(SimpleLangParser.AndBinopContext ctx) {
+        return null;
     }
 
 }
