@@ -128,7 +128,15 @@ public class SimpleLangInterpreter extends AbstractParseTreeVisitor<Integer> imp
 
     @Override
     public Integer visitBoolLitExpr(SimpleLangParser.BoolLitExprContext ctx) {
-        return null;
+        String boolLiteral = ctx.BoolLit().getText().toLowerCase(); // Convert to lowercase for case-insensitivity
+
+        if (boolLiteral.equals("true")) {
+            return 1; // Representing true as 1
+        } else if (boolLiteral.equals("false")) {
+            return 0; // Representing false as 0
+        } else {
+            throw new RuntimeException("Invalid boolean literal: " + boolLiteral);
+        }
     }
 
     @Override

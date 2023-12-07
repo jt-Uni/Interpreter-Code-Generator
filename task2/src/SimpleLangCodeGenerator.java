@@ -356,7 +356,22 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
     @Override
     public String visitBoolLitExpr(SimpleLangParser.BoolLitExprContext ctx) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        // Push 1 for true, 0 for false
+        if (ctx.BoolLit().equals("true")) {
+            sb.append("""
+            PushImm     1
+        """);
+        } else if (ctx.BoolLit().equals("false")) {
+            sb.append("""
+            PushImm     0
+        """);
+        } else {
+            throw new RuntimeException("Unexpected boolean literal");
+        }
+
+        return sb.toString();
     }
 
     @Override public String visitAssignExpr(SimpleLangParser.AssignExprContext ctx)
