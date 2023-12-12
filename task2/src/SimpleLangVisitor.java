@@ -34,6 +34,12 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTyped_idfr(SimpleLangParser.Typed_idfrContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#assignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignment(SimpleLangParser.AssignmentContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#type}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

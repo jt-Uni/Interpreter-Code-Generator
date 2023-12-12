@@ -14,12 +14,16 @@ typed_idfr
     : type Idfr
 ;
 
+assignment
+    : typed_idfr Assign exp
+;
+
 type
     : 'int' | 'bool' | 'unit'
 ;
 
 body
-    : LBrace (typed_idfr ':=' exp ';')* ene+=exp (Semicolon ene+=exp)* RBrace
+    : LBrace (assignment ';')* ene+=exp (Semicolon ene+=exp)* RBrace
 ;
 
 block

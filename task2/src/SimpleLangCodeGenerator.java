@@ -292,29 +292,62 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
         throw new RuntimeException("Should not be here!");
     }
 
+    @Override
+    public String visitAssignment(SimpleLangParser.AssignmentContext ctx) {
+        StringBuilder sb = new StringBuilder();
+
+        // Calculate offset
+        int offset = 4 + 8 * localVars.size() * 4;
+
+        // Store the offset in the local variables map
+        localVars.put(ctx.typed_idfr().Idfr().getText(), offset);
+
+        // Append expression result
+        sb.append(visit(ctx.exp()));
+
+        // Append PopRel instruction
+        sb.append(String.format("""
+            PopRel     %d
+        """, offset
+        ));
+
+        // Append PushImm instruction
+        sb.append("""
+            PushImm     0
+        """);
+
+        return sb.toString();
+    }
+
     @Override public String visitType(SimpleLangParser.TypeContext ctx)
     {
         throw new RuntimeException("Should not be here!");
     }
 
-    @Override public String visitBody(SimpleLangParser.BodyContext ctx)
-    {
-
+    @Override
+    public String visitBody(SimpleLangParser.BodyContext ctx) {
+        int totalExpr = ctx.assignment().size() + ctx.ene.size();
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < ctx.ene.size(); ++i) {
-            sb.append(visit(ctx.ene.get(i)));
-            if (i != ctx.ene.size() - 1) {
+        for (int i = 0; i < totalExpr; ++i) {
+            if (i < ctx.assignment().size()) {
+                SimpleLangParser.AssignmentContext rhs = ctx.assignment().get(i);
+                sb.append(visit(rhs));
+            } else {
+                sb.append(visit(ctx.ene.get(i - ctx.assignment().size())));
+            }
+
+            if (i != totalExpr - 1) {
                 sb.append("""
-                    Discard     4
+                        Discard     4
                 """
                 );
             }
         }
 
         return sb.toString();
-
     }
+
     @Override public String visitBlock(SimpleLangParser.BlockContext ctx)
     {
 
@@ -339,11 +372,35 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
 
         StringBuilder sb = new StringBuilder();
 
-        while (Integer.parseInt(visit(ctx.exp())) > 0) {
-            sb.append("""
-                Discard         4
-            """);
-        }
+        String loopStartLabel = String.format("label%d", labelCounter++);
+        String loopExitLabel = String.format("label%d", labelCounter++);
+
+        sb.append("""
+        PushImm 0
+        """);
+
+        sb.append(String.format("""
+        %s:
+        """, loopStartLabel)
+        );
+
+        sb.append(visit(ctx.exp())); // Generate code for the condition expression
+        sb.append("""
+        Invert
+        JumpTrue    %s
+    """.formatted(loopExitLabel));
+
+        sb.append(visit(ctx.block())); // Generate code for the loop body
+
+        sb.append("""
+        Discard 4
+        """);
+
+        sb.append(String.format("""
+        Jump        %s
+        %s:
+        """, loopStartLabel, loopExitLabel)
+        );
 
         return sb.toString();
 
@@ -471,7 +528,7 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
             case SimpleLangParser.And -> {
 
                 sb.append("""
-                    And
+                    LogicAnd
                 """
                 );
 
@@ -480,7 +537,7 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
             case SimpleLangParser.Or -> {
 
                 sb.append("""
-                    Or
+                    LogicOr
                 """
                 );
 
@@ -489,7 +546,25 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
             case SimpleLangParser.Xor -> {
 
                 sb.append("""
-                    Xor
+                    LogicXor
+                """
+                );
+
+            }
+
+            case SimpleLangParser.GreaterEq -> {
+
+                sb.append("""
+                    CompGE
+                """
+                );
+
+            }
+
+            case SimpleLangParser.Greater -> {
+
+                sb.append("""
+                    CompGT
                 """
                 );
 
@@ -586,6 +661,12 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
                 PrintSpace
             """
             );
+        } else if (ctx.exp().getClass() == SimpleLangParser.NewlineExprContext.class) {
+            sb.append("""
+                PrintNewLine
+            """
+            );
+
         } else {
             sb.append(visit(ctx.exp()));
             sb.append("""
@@ -642,8 +723,42 @@ public class SimpleLangCodeGenerator extends AbstractParseTreeVisitor<String> im
     }
 
     @Override
-    public String visitForExpr(SimpleLangParser.ForExprContext ctx) {
-        return null;
+    public String visitForExpr(SimpleLangParser.ForExprContext ctx)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        String loopStartLabel = String.format("label%d", labelCounter++);
+        String loopExitLabel = String.format("label%d", labelCounter++);
+
+        sb.append("""
+        PushImm 0
+        """);
+
+        sb.append(String.format("""
+        %s:
+        """, loopStartLabel)
+        );
+
+        sb.append(visit(ctx.block()));
+        sb.append(visit(ctx.exp())); // Generate code for the condition expression
+        sb.append("""
+        Invert
+        JumpTrue    %s
+    """.formatted(loopExitLabel));
+
+        // Generate code for the loop body
+
+        sb.append("""
+        Discard 4
+        """);
+
+        sb.append(String.format("""
+        Jump        %s
+        %s:
+        """, loopStartLabel, loopExitLabel)
+        );
+
+        return sb.toString();
     }
 
     @Override public String visitEqBinop(SimpleLangParser.EqBinopContext ctx)
